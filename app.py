@@ -154,6 +154,7 @@ def process_word(word, mapping):
         return [url_for('static', filename='sign_language_images/placeholder.jpg')]
 
 if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
     # Create necessary directories if they don't exist
     if not os.path.exists("static/uploads"):
         os.makedirs("static/uploads")
@@ -161,4 +162,4 @@ if __name__ == '__main__':
         os.makedirs(SIGN_LANGUAGE_IMAGES_DIR)
 
     # Run the Flask app
-    app.run(debug=True)
+    app.run()
