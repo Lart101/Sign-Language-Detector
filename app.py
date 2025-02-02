@@ -49,44 +49,41 @@ def index():
 
 @app.route('/detect_webcam', methods=['POST'])
 def detect_webcam():
-    # Decode the base64 image from the frontend
-    data = request.json
-    image_data = data['image'].split(",")[1]  # Remove the "data:image/jpeg;base64," prefix
-    image_bytes = base64.b64decode(image_data)
+    try:
+        data = request.json
+        image_data = data['image'].split(",")[1]
+        image_bytes = base64.b64decode(image_data)
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Convert bytes to numpy array
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        results = model(frame)
+        annotated_frame = results[0].plot()
 
-    # Perform object detection
-    results = model(frame)
-    annotated_frame = results[0].plot()
+        _, buffer = cv2.imencode('.jpg', annotated_frame)
+        frame_base64 = base64.b64encode(buffer).decode('utf-8')
 
-    # Encode the annotated frame back to base64
-    _, buffer = cv2.imencode('.jpg', annotated_frame)
-    frame_base64 = base64.b64encode(buffer).decode('utf-8')
+        detected_text = ""
+        boxes_data = []
+        for result in results:
+            boxes = result.boxes
+            for box in boxes:
+                class_id = int(box.cls)
+                label = model.names[class_id]
+                detected_text += label
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                boxes_data.append({
+                    "label": label,
+                    "x1": x1,
+                    "y1": y1,
+                    "x2": x2,
+                    "y2": y2
+                })
 
-    # Extract detected text and bounding boxes
-    detected_text = ""
-    boxes_data = []
-    for result in results:
-        boxes = result.boxes
-        for box in boxes:
-            class_id = int(box.cls)  # Class ID of the detected object
-            label = model.names[class_id]  # Get the class name from the model
-            detected_text += label
+        return jsonify({"image": frame_base64, "text": detected_text, "boxes": boxes_data})
+    except Exception as e:
+        logging.error(f"Error processing webcam detection: {str(e)}")
+        return jsonify({"error": "Error processing webcam detection"}), 500
 
-            # Extract bounding box coordinates
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            boxes_data.append({
-                "label": label,
-                "x1": x1,
-                "y1": y1,
-                "x2": x2,
-                "y2": y2
-            })
-
-    return jsonify({"image": frame_base64, "text": detected_text, "boxes": boxes_data})
 
 @app.route('/detect_image', methods=['POST'])
 def detect_image():
@@ -161,12 +158,11 @@ def process_word(word, mapping):
         return [url_for('static', filename='sign_language_images/placeholder.jpg')]
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
     # Create necessary directories if they don't exist
     if not os.path.exists("static/uploads"):
         os.makedirs("static/uploads")
     if not os.path.exists(SIGN_LANGUAGE_IMAGES_DIR):
         os.makedirs(SIGN_LANGUAGE_IMAGES_DIR)
-
+    
     # Run the Flask app
-    app.run()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
