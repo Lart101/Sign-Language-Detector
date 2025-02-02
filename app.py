@@ -5,11 +5,18 @@ import os
 import base64
 import numpy as np
 import logging
+from dotenv import load_dotenv
+from flask_cors import CORS
+
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING)
 app = Flask(__name__)
 
+CORS(app)
+
+app.config['DEBUG']=os.environ.get('FLASH_DEBUG')
 
 # Load the trained YOLO model
 model = YOLO("runs/detect/train9/weights/best.pt")
