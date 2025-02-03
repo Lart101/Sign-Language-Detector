@@ -1,6 +1,3 @@
 venv/
-TestingOthers/
-test_images/
-HandSignDetection.v1i.yolov11/
 yolo11n.pt
 training.ipynb
