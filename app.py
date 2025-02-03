@@ -19,7 +19,7 @@ CORS(app)
 app.config['DEBUG']=os.environ.get('FLASH_DEBUG')
 
 # Load the trained YOLO model
-model = YOLO("runs/detect/train9/weights/best.pt")
+model = YOLO("runs/detect/train14/weights/best.pt")
 
 # Define the path to your sign language images
 SIGN_LANGUAGE_IMAGES_DIR = "static/sign_language_images"
@@ -47,29 +47,30 @@ sign_language_mapping = {**letter_mappings, **number_mappings, **special_mapping
 def index():
     return render_template('index.html')
 
+
 @app.route('/detect_webcam', methods=['POST'])
 def detect_webcam():
     try:
+        # Parse incoming JSON request
         data = request.json
         image_data = data['image'].split(",")[1]
         image_bytes = base64.b64decode(image_data)
         nparr = np.frombuffer(image_bytes, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
+        # Perform object detection
         results = model(frame)
         annotated_frame = results[0].plot()
 
-        _, buffer = cv2.imencode('.jpg', annotated_frame)
-        frame_base64 = base64.b64encode(buffer).decode('utf-8')
-
-        detected_text = ""
+        detected_text = []
         boxes_data = []
+        
+        # Extract detection details and draw bounding boxes
         for result in results:
-            boxes = result.boxes
-            for box in boxes:
+            for box in result.boxes:
                 class_id = int(box.cls)
                 label = model.names[class_id]
-                detected_text += label
+                detected_text.append(label)
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 boxes_data.append({
                     "label": label,
@@ -78,11 +79,24 @@ def detect_webcam():
                     "x2": x2,
                     "y2": y2
                 })
+                
+                # Draw bounding box on frame
+                cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(annotated_frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        return jsonify({"image": frame_base64, "text": detected_text, "boxes": boxes_data})
+        # Convert annotated frame back to base64
+        _, buffer = cv2.imencode('.jpg', annotated_frame)
+        frame_base64 = base64.b64encode(buffer).decode('utf-8')
+
+        return jsonify({
+            "image": frame_base64,
+            "text": " ".join(detected_text),
+            "boxes": boxes_data
+        })
     except Exception as e:
         logging.error(f"Error processing webcam detection: {str(e)}")
         return jsonify({"error": "Error processing webcam detection"}), 500
+
 
 
 @app.route('/detect_image', methods=['POST'])

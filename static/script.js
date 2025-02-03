@@ -19,6 +19,7 @@ async function detectWebcamFrame() {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     const image_data_url = canvas.toDataURL('image/jpeg');
+
     fetch('/detect_webcam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,8 +28,29 @@ async function detectWebcamFrame() {
     .then(response => response.json())
     .then(data => {
         document.getElementById('webcam-text').innerText = `Detected Text: ${data.text}`;
-    });
+
+        // Clear canvas before drawing
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        console.log("Received boxes:", data.boxes); // Debugging output
+
+        // Draw bounding boxes if they exist
+        if (data.boxes && data.boxes.length > 0) {
+            ctx.strokeStyle = "green";
+            ctx.lineWidth = 2;
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "green";
+
+            data.boxes.forEach(box => {
+                ctx.strokeRect(box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1);
+                ctx.fillText(box.label, box.x1, box.y1 - 5);
+            });
+        }
+    })
+    .catch(error => console.error("Error detecting objects:", error));
 }
+
 
 // Image Upload
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
