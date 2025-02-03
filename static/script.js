@@ -113,3 +113,27 @@ document.getElementById('text-to-sign-form').addEventListener('submit', async (e
         signImagesContainer.appendChild(img);
     });
 });
+// Event listener for Stop Camera button
+document.getElementById('stop-webcam').addEventListener('click', () => {
+    const video = document.getElementById('webcam');
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+      document.getElementById('webcam-text').textContent = 'Camera stopped';
+    }
+  });
+  
+  // Function to start the webcam
+  function startWebcam() {
+    const video = document.getElementById('webcam');
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        document.getElementById('webcam-text').textContent = 'Camera started';
+      })
+      .catch(error => {
+        console.error("Error accessing webcam: ", error);
+        document.getElementById('webcam-text').textContent = 'Error starting camera';
+      });
+  }
+  

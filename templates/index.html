@@ -1,56 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Language Translator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Language Translator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-    <header class="header">
-        <h1>Sign Language Translator</h1>
-        <p>Real-time sign language detection and translation</p>
-    </header>
+  <header class="header">
+    <h1>Sign Language Translator</h1>
+    <p>Real-time sign language detection and translation</p>
+  </header>
 
-    <!-- Webcam Section -->
-    <section id="webcam-section" class="section">
-        <h2>Real-Time Detection</h2>
-        <div class="webcam-container">
-            <video id="webcam" autoplay playsinline></video>
-            <canvas id="canvas" style="display:none;"></canvas>
-        </div>
-        <button id="start-webcam" class="btn">Start Webcam</button>
-        <p id="webcam-text" class="result-text">Detected Text: Waiting...</p>
-    </section>
+  <!-- Webcam Section -->
+  <section id="webcam-section" class="section">
+    <div class="webcam-container">
+      <video id="webcam" autoplay playsinline></video>
+      <canvas id="canvas" style="display:none;"></canvas>
+      <div class="webcam-controls">
+        <button id="start-webcam" class="btn" onclick="startWebcam()">🎥 Start Camera</button>
+        <button id="stop-webcam" class="btn btn-danger">⏹️ Stop Camera</button>
+      </div>
+      <p id="webcam-text" class="result-text">Detected Text: Waiting...</p>
+    </div>
+  </section>
 
-    <!-- Image Upload Section -->
-    <section id="upload-section" class="section">
-        <h2>Upload Image</h2>
-        <form id="upload-form" enctype="multipart/form-data" class="form">
-            <input type="file" id="image-upload" accept="image/*" class="file-input">
-            <button type="submit" class="btn">Detect</button>
-        </form>
-        <div id="result-container" class="result-container">
-            <img id="result-image" src="" alt="Result" class="result-image" style="display:none;">
-            <p id="upload-text" class="result-text">Detected Text: Waiting...</p>
-        </div>
-    </section>
-    
-    <section id="text-to-sign-section" class="section">
-        <h2>Text-to-Sign Language Translation</h2>
-        <form id="text-to-sign-form" class="form">
-            <input type="text" id="input-text" placeholder="Enter text (e.g., HELLO)" class="text-input">
-            <button type="submit" class="btn">Translate</button>
-        </form>
-        <div id="translated-signs" class="translated-signs">
-            <p>Translated Signs:</p>
-            <div id="sign-images-container" class="sign-images-container"></div>
-            <p id="no-results-message" style="display: none;">No sign language images available for the input.</p>
-        </div>
-    </section>
+  <!-- Image Upload Section -->
+  <section id="upload-section" class="section">
+    <h2>Upload Image</h2>
+    <form id="upload-form" enctype="multipart/form-data" class="form">
+      <input type="file" id="image-upload" accept="image/*" class="file-input" />
+      <button type="submit" class="btn">Detect</button>
+    </form>
+    <div id="result-container" class="result-container">
+      <img id="result-image" src="" alt="Result" class="result-image" style="display:none;" />
+      <p id="upload-text" class="result-text">Detected Text: Waiting...</p>
+    </div>
+  </section>
 
-    
+  <!-- Text-to-Sign Translation Section -->
+  <section id="text-to-sign-section" class="section">
+    <h2>Text-to-Sign Language Translation</h2>
+    <form id="text-to-sign-form" class="form">
+      <input type="text" id="input-text" placeholder="Enter text (e.g., HELLO)" class="text-input" />
+      <button type="submit" class="btn">Translate</button>
+    </form>
+    <div id="translated-signs" class="translated-signs">
+      <p>Translated Signs:</p>
+      <div id="sign-images-container" class="sign-images-container"></div>
+      <p id="no-results-message" style="display: none;">No sign language images available for the input.</p>
+    </div>
+  </section>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
